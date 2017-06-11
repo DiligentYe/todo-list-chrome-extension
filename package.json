@@ -1,0 +1,15 @@
+{
+  "name": "todo-list-chrome-extension",
+  "version": "1.0.0",
+  "description": "show todo list in chrome browser",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "browser",
+    "exitension"
+  ],
+  "author": "yyp",
+  "license": "ISC"
+}
