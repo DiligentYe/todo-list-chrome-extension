@@ -1,0 +1,54 @@
+{
+    "manifest_version": 2, // chrome扩展必须设置
+    "name": "待办清单",
+    "version": "1.0",
+    "default_locale": "en",
+    "description": "待办清单",
+
+    "icons": {
+        "16": "images/icon16.png",
+        "48": "images/icon48.png",
+        "128": "images/icon128.png"
+    },
+
+    "browser_action": {
+        "default_icon": {
+            "19": "images/icon19.png",
+            "38": "images/icon38.png"
+        },
+        "default_title": "待办清单",
+        "default_popup": "popup.html"
+    },
+
+    "page_action": {
+        "default_icon": {
+            "19": "images/icon19.png",
+            "38": "images/icon38.png"
+        },
+        "default_title": "Extension Title",
+        "default_popup": "popup.html"
+    },
+
+    // background属性可以使扩展常驻后台
+    "background": {
+        "scripts": ["background.js"]
+    },
+
+    // 通过Manifest中的content_scripts属性可以指定将哪些脚本何时注入到哪些页面中，当用户访问这些页面后，相应脚本即可自动运行，从而对页面DOM进行操作。
+    "content_scripts": [{
+        "matches": ["http://www.google.com/*"],
+        "css": ["mystyles.css"],
+        "js": ["jquery.js", "myscript.js"]
+    }],
+
+    "options_page": "options.html",
+
+    //Google允许Chrome扩展应用不必受限于跨域限制。但出于安全考虑，需要在Manifest的permissions属性中声明需要跨域的权限。
+    "permissions": [
+        "*://www.google.com/*"
+    ],
+
+    "web_accessible_resources": [
+        "images/*.png"
+    ]
+}
