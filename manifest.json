@@ -7,7 +7,9 @@
     "icons": {},
 
     "browser_action": {
-        "default_icon": {},
+        "default_icon": {
+            "19":"icons/qr.jpg"
+        },
         "default_title": "二维码生成器",
         "default_popup": "qr_popup.html"
     },
@@ -19,7 +21,7 @@
     // }],
 
     "permissions": [
-        "*://*.baidu.com/*"
+        "tabs"
     ],
 
     "web_accessible_resources": [

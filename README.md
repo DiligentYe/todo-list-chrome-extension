@@ -1,43 +1,11 @@
-# 浏览器插件————todo list
+# 浏览器插件————二维码生成器
 
-## 自定义模版引擎
+## manifest.json特殊字段
 
-1. 实现原理
-    将自定义类型的script标签中的字符串拼接为可执行的语句字符串，在通过eval执行该字符串，生成对应文档结构，在通过innerHTML将该结构添加到指定的元素下面
+1. browser_action: 插件为浏览器行为
+2. permission: 允许使用tabs
 
-2. 自定义模版引擎格式
-    1. 赋值 {{data}}
-    2. 判断 {{if(...) { }} {{ } else if(...) { }} {{else}} {{ } }}
-    3. 对象 {{for(key in object) { }} {{ } }}
-    4. 数组 {{for(var i = 0); i < arrays.length; ++i) { }} {{ } }}
-    处理赋值以外，其他语句需要独占一行
+## 所需文件
 
-3. 示范
- ```
-    /*  解析前
-            <ul>
-                {{for(var i = 0; i < data.todos.length; ++i)}}
-                    {{if(data.todos[i].todo_type)}}
-                        <li>{{data.todos[i].todo_name}}</li>
-                    {{/if}}
-                {{/for}}
-            </ul>
-     */
-    
-    /*  解析后
-        var str = "";
-        str += "<ul>";
-        for (var i = 0; i < data.todos.length; ++i) {
-            if (data.todos[i].todo_type) {
-                str += "<li>";
-                str += data.todos[i].todo_name;
-                str += "</li>";
-            }
-        }
-        str += "</ul>";
-     */
-    
-    /*  执行后
-        <ul><li>eat</li><li>sleep</li><li>play</li></ul>
-     */
- ```
+1. qr_popup.html 弹出层样式和基本结构
+1. js/qr.js 调用生成二维码接口生成对应图片添加到弹出层上
