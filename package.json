@@ -11,5 +11,8 @@
     "exitension"
   ],
   "author": "yyp",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "echarts": "^3.6.2"
+  }
 }
