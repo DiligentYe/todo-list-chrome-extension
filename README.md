@@ -33,6 +33,14 @@
     页面所有资源加载完毕，load事件触发
     performance.timing.domComplete - performance.timing.navigationStart
 
+### 静态资源分析项目
+
+#### 重定向次数
+#### 各种资源数量
+#### 各种资源总传输体积
+#### 各类资源展示
+
+
 ## 遇到的问题
 1. 如何获取页面performance对象
     通过content_scripts，来操作页面内容。 

@@ -17,9 +17,6 @@
 			var performance = response.performance.timing;
 			var firstPaint = response.firstPaint;
 
-			// 重定向次数
-			performance_data.redirectCount = performance.redirectStart === 0 ? 0 : 1;
-
 			// 域名解析时间
 			performance_data.domainLookup = msToS(performance.domainLookupEnd - performance.domainLookupStart);
 
@@ -71,8 +68,86 @@
 				time: msToS(performance.loadEventEnd - performance.navigationStart)
 			}];
 
+			// 	// 静态资源
+			var resource = response.resource;
+
+
+			// 重定向次数
+			var redirectCount = 0;
+			// 各类资源个数统计
+			var resourceNum = [];
+			// 各类资源总传输体积
+			var resourceSize = [];
+
+			var count = [];
+			count.redirectCount = 0;
+			count.transferSize = 0;
+			count.imgSize = 0;
+			count.jsSize = 0;
+			count.cssSize = 0;
+			count.otherSize = 0;
+
+			for (var i = 0; i < resource.length; ++i) {
+				count.push({});
+				// 是否压缩
+				count[i].isEncoded = resource[i].encodedBodySize != resource.decodedBodySize;
+
+				// 链接地址
+				count[i].url = resource[i].name;
+				// 文件名 
+				count[i].name = resource[i].name.replace(/https?:\/\/(.*\/)*/, '');
+
+				// 类型
+				switch (count[i].name.replace(/.*\./, '')) {
+					case 'jpg':
+					case 'jpeg':
+					case 'png':
+					case 'gif':
+					case 'webp':
+						count[i].type = 'img';
+						count.during = resource[i].duration;
+						count.domainLookup = resource[i].domainLookupEnd - resource[i].domainLookupStart;
+						count.domainLookup = resource[i].responseEnd - resource[i].responseStart;
+						break;
+					case 'js':
+						count[i].type = 'js';
+						count.during = resource[i].duration;
+						count.domainLookup = resource[i].domainLookupEnd - resource[i].domainLookupStart;
+						count.domainLookup = resource[i].responseEnd - resource[i].responseStart;
+						break;
+					case 'css':
+						count[i].type = 'css';
+						count.during = resource[i].duration;
+						count.domainLookup = resource[i].domainLookupEnd - resource[i].domainLookupStart;
+						count.domainLookup = resource[i].responseEnd - resource[i].responseStart;
+						break;
+					default:
+						if (resource[i].initiatorType == 'navigation' || resource[i].initiatorType == 'xmlhttprequest' || count[i].initiatorType == '') {
+							count[i].type = 'other';
+						} else {
+							count[i].type = resource[i].initiatorType;
+						}
+						count.during = resource[i].duration;
+						count.domainLookup = resource[i].domainLookupEnd - resource[i].domainLookupStart;
+						count.domainLookup = resource[i].responseEnd - resource[i].responseStart;
+						break;
+				}
+
+				// 文件大小
+				count[i].size = resource[i].decodedBodySize;
+
+				// 是否本地缓存
+				count[i].isCache = !!resource[i].transferSize;
+
+				count.redirectCount = resource[i].redirectStart == 0 ? count.redirectCount : count.redirectCount + 1;
+			}
+
+			console.log(filterByKey(count, 'type', 'other'));
+
 			render(performance_data);
+
 		});
+
 	});
 })();
 
@@ -200,4 +275,11 @@ function renderLineStack(timeline) {
 // 时间转换：将毫秒转换为秒
 function msToS(ms) {
 	return +((ms / 1000).toFixed(3).replace(/\..0*$/, ''));
+}
+
+// 根据键值筛选数据函数
+function filterByKey(arrs, key, value) {
+	return arrs.filter(function(item, index) {
+		return item[key] == value;
+	});
 }
