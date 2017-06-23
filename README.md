@@ -40,6 +40,10 @@
 #### 各种资源总传输体积
 #### 各类资源展示
 
+## 自定义表格
+1. 使用display属性定义表格
+2. 表头设置点击事件，可以选择类型，或者根据某种情况，进行排序显示
+3. 表格中的内容，设置最大宽度，超出最大宽度，隐藏，鼠标悬浮，在浮层上显示全部内容
 
 ## 遇到的问题
 1. 如何获取页面performance对象
@@ -70,6 +74,10 @@
     startTime -> redirectStart -> redirectEnd -> fetchStart -> domainLookupStart -> domainLookupEnd -> connectStart -> connectEnd ->  requestStart -> responseStart -> responseEnd
 
     如果静态资源是在缓存中，那么， fetchStart == domainLookupStart == connectStart == requestStart == responseStart
+
+9. 表格建立过程中，一开始没有设置head和body，每次事件操作后，表头都会重新设置，导致事件需要重新挂载。
+
+10. 
 
 
 

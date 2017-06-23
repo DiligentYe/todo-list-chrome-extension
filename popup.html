@@ -19,25 +19,29 @@
         </div>
     </div>
     <div id="showResource" class="table">
-        <div class="table-tr">
-            <div class="table-th">编号</div>
-            <div class="table-th">名称</div>
-            <div class="table-th select" id="selectType">类型
-                <div class="options" id="downlist">
-                    <span data-type="all">全部</span>
-                    <span data-type="js">脚本</span>
-                    <span data-type="css">样式</span>
-                    <span data-type="img">图片</span>
-                    <span data-type="doc">文档</span>
-                    <span data-type="other">其他</span>
+        <div class="table-head">
+            <div class="table-tr">
+                <div class="table-th">编号</div>
+                <div class="table-th">名称</div>
+                <div class="table-th select" id="selectType">类型
+                    <div class="options" id="downlist">
+                        <span data-type="all">全部</span>
+                        <span data-type="js">脚本</span>
+                        <span data-type="css">样式</span>
+                        <span data-type="img">图片</span>
+                        <span data-type="doc">文档</span>
+                        <span data-type="other">其他</span>
+                    </div>
                 </div>
+                <div class="table-th">url</div>
+                <div class="table-th sort" data-sort='normal' data-prop="domainLook">域名解析时间</div>
+                <div class="table-th sort" data-sort='normal' data-prop="request">请求时间</div>
+                <div class="table-th sort" data-sort='normal' data-prop="response">响应时间</div>
+                <div class="table-th sort" data-sort='normal' data-prop="during">总时长</div>
+                <div class="table-th">缓存</div>
             </div>
-            <div class="table-th">url</div>
-            <div class="table-th sort" data-sort='normal' id="domainLook">域名解析时间</div>
-            <div class="table-th sort" data-sort='normal' id="request">请求时间</div>
-            <div class="table-th sort" data-sort='normal' id="response">响应时间</div>
-            <div class="table-th sort" data-sort='normal' id="total">总时长</div>
-            <div class="table-th">缓存</div>
+        </div>
+        <div class="table-body" id="tableBody">
         </div>
     </div>
     <script src="node_modules/echarts/dist/echarts.min.js"></script>
