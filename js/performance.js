@@ -1,11 +1,6 @@
 (function() { // 计算各种性能数据
 	var performance_data = {};
 
-	// chrome.runtime.sendMessage({
-	// 	name: "getWindow"
-	// }, function(response) {
-	// 	console.log(response);
-	// });
 
 	chrome.tabs.query({
 		active: true,
@@ -76,75 +71,89 @@
 			var redirectCount = 0;
 			// 各类资源个数统计
 			var resourceNum = [];
-			// 各类资源总传输体积
-			var resourceSize = [];
 
-			var count = [];
-			count.redirectCount = 0;
-			count.transferSize = 0;
-			count.imgSize = 0;
-			count.jsSize = 0;
-			count.cssSize = 0;
-			count.otherSize = 0;
+			var resourceCount = [];
+			resourceCount.redirectCount = 0;
+			resourceCount.imgNum = 0;
+			resourceCount.cssNum = 0;
+			resourceCount.jsNum = 0;
+			resourceCount.docNum = 0;
+			resourceCount.otherNum = 0;
 
 			for (var i = 0; i < resource.length; ++i) {
-				count.push({});
-				// 是否压缩
-				count[i].isEncoded = resource[i].encodedBodySize != resource.decodedBodySize;
-
+				resourceCount.push({});
 				// 链接地址
-				count[i].url = resource[i].name;
+				resourceCount[i].url = resource[i].name;
+
 				// 文件名 
-				count[i].name = resource[i].name.replace(/https?:\/\/(.*\/)*/, '');
+				resourceCount[i].name = resource[i].name.replace(/https?:\/\/(.*\/)*/, '');
+
+				// 开始请求事件
+				resourceCount[i].startTime = resource[i].startTime;
+
+				// 总时长
+				resourceCount[i].during = msToS(resource[i].duration);
+
+				// 域名解析时间
+				resourceCount[i].domainLookup = msToS(resource[i].domainLookupEnd - resource[i].domainLookupStart);
+
+				// 请求时间
+				resourceCount[i].request = msToS(resource[i].responseStart - resource[i].requestStart);
+
+				// 响应时间
+				resourceCount[i].response = msToS(resource[i].responseEnd - resource[i].responseStart);
 
 				// 类型
-				switch (count[i].name.replace(/.*\./, '')) {
+				switch (resourceCount[i].name.replace(/.*\./, '')) {
 					case 'jpg':
 					case 'jpeg':
 					case 'png':
 					case 'gif':
 					case 'webp':
-						count[i].type = 'img';
-						count.during = resource[i].duration;
-						count.domainLookup = resource[i].domainLookupEnd - resource[i].domainLookupStart;
-						count.domainLookup = resource[i].responseEnd - resource[i].responseStart;
+						resourceCount[i].type = 'img';
+						resourceCount.imgNum++;
 						break;
 					case 'js':
-						count[i].type = 'js';
-						count.during = resource[i].duration;
-						count.domainLookup = resource[i].domainLookupEnd - resource[i].domainLookupStart;
-						count.domainLookup = resource[i].responseEnd - resource[i].responseStart;
+						resourceCount[i].type = 'js';
+						resourceCount.jsNum++;
 						break;
 					case 'css':
-						count[i].type = 'css';
-						count.during = resource[i].duration;
-						count.domainLookup = resource[i].domainLookupEnd - resource[i].domainLookupStart;
-						count.domainLookup = resource[i].responseEnd - resource[i].responseStart;
+						resourceCount[i].type = 'css';
+						resourceCount.cssNum++;
 						break;
 					default:
-						if (resource[i].initiatorType == 'navigation' || resource[i].initiatorType == 'xmlhttprequest' || count[i].initiatorType == '') {
-							count[i].type = 'other';
+						if (resource[i].initiatorType == 'xmlhttprequest') {
+							resourceCount[i].type = 'doc';
+							resourceCount.docNum++;
 						} else {
-							count[i].type = resource[i].initiatorType;
+							resourceCount[i].type = 'other';
+							resourceCount.otherNum++;
 						}
-						count.during = resource[i].duration;
-						count.domainLookup = resource[i].domainLookupEnd - resource[i].domainLookupStart;
-						count.domainLookup = resource[i].responseEnd - resource[i].responseStart;
 						break;
 				}
 
-				// 文件大小
-				count[i].size = resource[i].decodedBodySize;
-
 				// 是否本地缓存
-				count[i].isCache = !!resource[i].transferSize;
+				resourceCount[i].isCache = (resource[i].fetchStart == resource[i].responseStart);
+				console.log(resourceCount[i].isCache);
 
-				count.redirectCount = resource[i].redirectStart == 0 ? count.redirectCount : count.redirectCount + 1;
+				resourceCount.redirectCount = resource[i].redirectStart == 0 ? resourceCount.redirectCount : resourceCount.redirectCount + 1;
 			}
 
-			console.log(filterByKey(count, 'type', 'other'));
+			performance_data.resourceCount = resourceCount;
 
-			render(performance_data);
+			/*定义全局DOM变量*/
+			// 统计个阶段数据
+			var dataTable = document.getElementById('data_sum');
+			var dataTableHtml = dataTable.innerHTML;
+
+			// 显示所有资源
+			var resourceTable = document.getElementById('showResource');
+			var resourceTableHtml = resourceTable.innerHTML;
+
+			render(performance_data, dataTable, dataTableHtml, resourceTable, resourceTableHtml);
+
+			// 挂载事件
+			listener(performance_data.resourceCount, resourceTable, resourceTableHtml);
 
 		});
 
@@ -152,12 +161,18 @@
 })();
 
 // 渲染数据
-function render(data) {
+function render(data, dataTable, dataTableHtml, resourceTable, resourceTableHtml) {
 	// 绘制折线图
 	renderLineStack(data.timeline);
 
 	// 绘制扇形图
 	renderFanShape(data);
+
+	// 绘制表格1
+	renderTimeTable(data, dataTable, dataTableHtml);
+
+	//  绘制表格2
+	renderResource(data.resourceCount, resourceTable, resourceTableHtml);
 
 	// console.log(data);
 	// console.log(data.DOMReady_time);
@@ -175,14 +190,71 @@ function render(data) {
 	// test.innerHTML = html;
 }
 
+/* 绘图函数 */
+// 绘制表格2
+function renderResource(resourceCount, resourceTable, resourceTableHtml) {
+	for (var i = 0; i < resourceCount.length; ++i) {
+		resourceTableHtml += '<div class="table-tr">';
+		resourceTableHtml += '	<div class="table-td">' + (i + 1) + '</div>';
+		resourceTableHtml += '	<div class="table-td resource-name">' + resourceCount[i].name + '</div>';
+		resourceTableHtml += '	<div class="table-td">' + resourceCount[i].type + '</div>';
+		resourceTableHtml += '	<div class="table-td resource-url">' + resourceCount[i].url + '</div>';
+		resourceTableHtml += '	<div class="table-td">' + resourceCount[i].domainLookup + '</div>';
+		resourceTableHtml += '	<div class="table-td">' + resourceCount[i].request + '</div>';
+		resourceTableHtml += '	<div class="table-td">' + resourceCount[i].response + '</div>';
+		resourceTableHtml += '	<div class="table-td">' + resourceCount[i].during + '</div>';
+		resourceTableHtml += '	<div class="table-td">' + (resourceCount[i].isCache ? '是' : '否') + '</div>';
+		resourceTableHtml += '</div>';
+	}
+
+	resourceTable.innerHTML = resourceTableHtml;
+}
+
+// 绘制表格1
+function renderTimeTable(timing, dataTable, dataTableHtml) {
+	// 其他
+	var other = timing.allTime - timing.domainLookup - timing.connect - timing.response - timing.DOMReady - timing.domContentLoad
+	other = other >= 0 ? (Math.round(other * 1000) / 1000).toFixed() : 0;
+
+	var data = [{
+		value: timing.domainLookup,
+		name: '域名解析'
+	}, {
+		value: timing.connect,
+		name: 'TCP建立'
+	}, {
+		value: timing.response,
+		name: '响应'
+	}, {
+		value: timing.DOMReady,
+		name: 'DOMReady'
+	}, {
+		value: timing.domContentLoad,
+		name: '图片等资源加载'
+	}, {
+		value: other,
+		name: '其他'
+	}];
+
+	for (var i = 0; i < data.length; ++i) {
+		dataTableHtml += '<div class="table-tr">';
+		dataTableHtml += '<div class="table-td">' + data[i].name + '</div>';
+		dataTableHtml += '<div class="table-td">' + data[i].value + '</div>';
+		dataTableHtml += '</div>';
+	}
+
+	dataTable.innerHTML = dataTableHtml;
+
+}
+
 // 饼图
 function renderFanShape(data) {
 	// 基于准备好的dom，初始化echarts实例
-	var myChart = echarts.init(document.getElementById('fanShape'));
+	var myChart = echarts.init(document.getElementById('fanShape_sum'));
 
 	// 其他
 	var other = data.allTime - data.domainLookup - data.connect - data.response - data.DOMReady - data.domContentLoad
-	other = other >= 0 ? other : 0;
+	other = other >= 0 ? other.toFixed(3) : 0;
 
 	// 指定图表的配置项和数据
 	var option = {
@@ -222,7 +294,7 @@ function renderFanShape(data) {
 // 绘制性能折线图
 function renderLineStack(timeline) {
 	// 基于准备好的dom，初始化echarts实例
-	var myChart = echarts.init(document.getElementById('lineStack'));
+	var myChart = echarts.init(document.getElementById('lineStack_sum'));
 
 	// 指定图表的配置项和数据
 	var option = {
@@ -272,6 +344,48 @@ function renderLineStack(timeline) {
 	myChart.setOption(option);
 }
 
+/* 交互行为 */
+/* 表格行为 */
+// 显示下拉列表
+function showList() {
+	var downlist = document.getElementById('downlist');
+	downlist.style.display = 'block';
+}
+
+// 隐藏下拉列表
+function hideList() {
+	var downlist = document.getElementById('downlist');
+	downlist.style.display = 'none';
+}
+
+// 注册事件
+function listener(data, resourceTable, resourceTableHtml) {
+	var selectType = document.getElementById('selectType');
+	var downlist = document.getElementById('downlist');
+
+	// 显示或隐藏下拉列表
+	selectType.addEventListener('mouseover', function(event) {
+		showList();
+	}, false);
+
+	selectType.addEventListener('mouseout', function(event) {
+		hideList();
+	}, false);
+
+	// 点击下拉列表元素
+	downlist.addEventListener('click', function(event) {
+		var type = event.target.getAttribute('data-type');
+
+		var selectedResource = [];
+		if (type) {
+			selectedResource = filterByKey(data, 'type', type);
+			// 更新表格数据
+			renderResource(selectedResource, resourceTable, resourceTableHtml);
+		}
+	}, false);
+}
+
+/* 工具函数 */
 // 时间转换：将毫秒转换为秒
 function msToS(ms) {
 	return +((ms / 1000).toFixed(3).replace(/\..0*$/, ''));
@@ -282,4 +396,16 @@ function filterByKey(arrs, key, value) {
 	return arrs.filter(function(item, index) {
 		return item[key] == value;
 	});
+}
+
+// 八进制转十进制
+function octToDec(oct) {
+	var dec = 0;
+	var index = 0;
+	while (oct) {
+		mod = oct % 10;
+		oct = Math.floor(oct / 10);
+		dec += mod * Math.pow(8, index++);
+	}
+	return dec;
 }

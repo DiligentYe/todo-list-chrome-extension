@@ -63,6 +63,16 @@
 6. domContentLoad事件和load事件
     domContentLoad，表示DOM结构解析完毕，DOM在解析过程中，如果遇到脚本，必须等到脚本执行完之后才能继续进行DOM解析，而样式文件会阻塞脚本的执行，但是图片等资源的加载不会阻塞DOM结构解析，因此在DOM结构解析完成后，同步的脚本文件和样式文件都已经加载完成，但是图片等文件只有在load事件触发之前才加载完毕。
 
+7. 判断静态资源类型
+    由于window.performance.getEntries().initiatorType纪录请求的发起者，有时候描述不准确描述资源的类型，所以先根据文件名后缀判断文件类型，没有后缀名的，使用initiatorType属性值，其中navigation，xmlhttprequest，空，设置为other
+
+8. 如何判断静态资源是否缓存
+    startTime -> redirectStart -> redirectEnd -> fetchStart -> domainLookupStart -> domainLookupEnd -> connectStart -> connectEnd ->  requestStart -> responseStart -> responseEnd
+
+    如果静态资源是在缓存中，那么， fetchStart == domainLookupStart == connectStart == requestStart == responseStart
+
+
+
 
     
 
