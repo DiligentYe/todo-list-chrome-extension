@@ -1,7 +1,6 @@
 (function() { // 计算各种性能数据
 	var performance_data = {};
 
-
 	chrome.tabs.query({
 		active: true,
 		currentWindow: true
@@ -9,6 +8,14 @@
 		chrome.tabs.sendMessage(tabs[0].id, {
 			name: "getPerf"
 		}, function(response) {
+			// 当页面未加载完毕，提示用户，不进行任何操作
+			if(!response.performance) {
+				document.getElementById('marker').style.display = 'block';
+				return;
+			}
+
+			document.getElementById('marker').style.display = 'none';
+
 			var performance = response.performance.timing;
 			var firstPaint = response.firstPaint;
 
@@ -141,6 +148,7 @@
 
 			performance_data.resourceCount = resourceCount;
 
+			// 渲染
 			render(performance_data);
 
 			// 挂载事件
@@ -150,6 +158,54 @@
 
 	});
 })();
+
+// 注册事件
+function listener(data, resourceTable, resourceTableHtml) {
+	var selectType = document.getElementById('selectType');
+	var showResource = document.getElementById('showResource');
+
+	// 显示或隐藏下拉列表
+	selectType.addEventListener('mouseover', function(event) {
+		showList();
+	}, false);
+
+	selectType.addEventListener('mouseout', function(event) {
+		hideList();
+	}, false);
+
+	// 初始化已刷选的数据
+	var handleDatas = data;
+
+	showResource.addEventListener('click', function(event) {
+		// 选择类型
+		var type = event.target.getAttribute('data-type');
+		// 排序类型
+		var sortType = event.target.getAttribute('data-sort');
+		// 排序依据的属性
+		var sortProp = event.target.getAttribute('data-prop');
+
+		// 点击下拉列表元素
+		if (type) {
+			// 在所有数据中进行筛选
+			handleDatas = downlistClick(data, type, resourceTable, resourceTableHtml);
+		}
+
+		// 点击排序按钮
+		if (sortType) {
+			// 对已帅选的数据进行排序
+			handleDatas = sortByKey(handleDatas, sortProp, sortType, event.target)
+		}
+
+		// 更新表格数据
+		renderResource(handleDatas, resourceTable, resourceTableHtml);
+
+		// 关闭下拉菜单
+		hideList();
+
+	}, false);
+
+}
+
 
 // 渲染数据
 function render(data) {
@@ -164,21 +220,6 @@ function render(data) {
 
 	//  绘制表格2
 	renderResource(data.resourceCount);
-
-	// console.log(data);
-	// console.log(data.DOMReady_time);
-	// var html = '';
-	// html += '<span>redirectCount时间：</span><span>' + data.redirectCount + '</span><br/>';
-	// html += '<span>domainLookup时间：</span><span>' + data.domainLookup + '</span><br/>';
-	// html += '<span>connect时间：</span><span>' + data.connect + '</span><br/>';
-	// html += '<span>request时间：</span><span>' + data.request + '</span><br/>';
-	// html += '<span>response时间：</span><span>' + data.response + '</span><br/>';
-	// html += '<span>DOM时间：</span><span>' + data.DomCssom + '</span><br/>';
-	// html += '<span>renderTree时间：</span><span>' + data.renderTree + '</span><br/>';
-	// html += '<span>DOMReady时间：</span><span>' + data.DOMReady + '</span><br/>';
-
-	// var test = document.getElementById('test');
-	// test.innerHTML = html;
 }
 
 /* 绘图函数 */
@@ -188,11 +229,15 @@ function renderResource(resourceCount) {
 	var resourceTableHtml = '';
 
 	for (var i = 0; i < resourceCount.length; ++i) {
-		resourceTableHtml += '<div class="table-tr">';
+		if(resourceCount[i].isCache) {
+			resourceTableHtml += '<div class="table-tr heightlight">';
+		} else {
+			resourceTableHtml += '<div class="table-tr">';
+		}
 		resourceTableHtml += '	<div class="table-td">' + (i + 1) + '</div>';
-		resourceTableHtml += '	<div class="table-td resource-name">' + resourceCount[i].name + '</div>';
+		resourceTableHtml += '	<div class="table-td resource-name" title=' + resourceCount[i].name + '>' + resourceCount[i].name + '</div>';
 		resourceTableHtml += '	<div class="table-td">' + resourceCount[i].type + '</div>';
-		resourceTableHtml += '	<div class="table-td resource-url">' + resourceCount[i].url + '</div>';
+		resourceTableHtml += '	<div class="table-td resource-url" title=' + resourceCount[i].url + '>' + resourceCount[i].url + '</div>';
 		resourceTableHtml += '	<div class="table-td">' + resourceCount[i].domainLookup + '</div>';
 		resourceTableHtml += '	<div class="table-td">' + resourceCount[i].request + '</div>';
 		resourceTableHtml += '	<div class="table-td">' + resourceCount[i].response + '</div>';
@@ -255,7 +300,7 @@ function renderFanShape(data) {
 	// 指定图表的配置项和数据
 	var option = {
 		title: {
-			text: '加载时间分配图'
+			// text: '加载时间分配图'
 		},
 		color: ['#26a1ff', '#ffaa01', '#fb0365', '#ffcc43', '#dc48f8', '#b0dc00'],
 		series: [{
@@ -295,7 +340,7 @@ function renderLineStack(timeline) {
 	// 指定图表的配置项和数据
 	var option = {
 		title: {
-			text: '页面性能折线图'
+			// text: '页面性能折线图'
 		},
 		color: ['#26a1ff'],
 		tooltip: {
@@ -308,13 +353,13 @@ function renderLineStack(timeline) {
 			left: '3%',
 			right: '4%',
 			bottom: '3%',
-			containLabel: true
+			containLabel: true	
 		},
-		toolbox: {
-			feature: {
-				saveAsImage: {}
-			}
-		},
+		// toolbox: {
+		// 	feature: {
+		// 		saveAsImage: {}
+		// 	}
+		// },
 		yAxis: {
 			type: 'category',
 			boundaryGap: false,
@@ -354,66 +399,14 @@ function hideList() {
 	downlist.style.display = 'none';
 }
 
-// 注册事件
-function listener(data, resourceTable, resourceTableHtml) {
-	var selectType = document.getElementById('selectType');
-	var showResource = document.getElementById('showResource');
-
-	// 显示或隐藏下拉列表
-	selectType.addEventListener('mouseover', function(event) {
-		showList();
-	}, false);
-
-	selectType.addEventListener('mouseout', function(event) {
-		hideList();
-	}, false);
-
-
-	showResource.addEventListener('click', function(event) {
-		// 选择类型
-		var type = event.target.getAttribute('data-type');
-		// 排序类型
-		var sortType = event.target.getAttribute('data-sort');
-		// 排序依据的属性
-		var sortProp = event.target.getAttribute('data-prop');
-
-		var handleDatas = [];
-
-		// 点击下拉列表元素
-		if (type) {
-			handleDatas = downlistClick(data, type, resourceTable, resourceTableHtml);
-		}
-
-		// 点击排序按钮
-		if (sortType) {
-			handleDatas = sortByKey(data, sortProp, sortType, event.target)
-
-		}
-
-		// 更新表格数据
-		renderResource(handleDatas, resourceTable, resourceTableHtml);
-
-
-		// 关闭下拉菜单
-		hideList();
-
-
-	}, false);
-
-	// 点击可排序属性
-	// 
-}
-
-// 
+// 点击下拉列表事件
 function downlistClick(data, type, resourceTable, resourceTableHtml) {
 	if (type == 'all') {
 		return data;
 	} else {
 		return filterByKey(data, 'type', type);
 	}
-
 }
-
 
 // 根据相应的键值进行排序
 function sortByKey(arrs, key, type, DOM) {
@@ -441,7 +434,6 @@ function filterByKey(arrs, key, value) {
 }
 
 // 两个sort函数
-
 function compareInc(prop) {
 	return function(a, b) {
 		return a[prop] - b[prop];
@@ -452,17 +444,4 @@ function compareDec(prop) {
 	return function(a, b) {
 		return b[prop] - a[prop];
 	}
-}
-
-
-// 八进制转十进制
-function octToDec(oct) {
-	var dec = 0;
-	var index = 0;
-	while (oct) {
-		mod = oct % 10;
-		oct = Math.floor(oct / 10);
-		dec += mod * Math.pow(8, index++);
-	}
-	return dec;
 }

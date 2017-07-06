@@ -2,11 +2,36 @@ body {
     width: 600px;
     height:  800px;
     overflow: scroll;
+    color: #333;
+}
+
+h1 {
+    font-size: 20px;
+    font-weight: 400;
+    margin: 0;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+h2 {
+    font-size: 16px;
+    font-weight: 400;
+    margin: 0;
+    padding: 10px 0;
 }
 
 #lineStack_sum {
     width: 600px;
     height: 300px;
+    margin-top: -50px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+#container {
+    overflow: hidden;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
 }
 
 #fanShape_sum {
@@ -20,6 +45,11 @@ body {
     width: 200px;
     height: 300px;
     padding: 25px 0;
+    margin-left: 10px;
+}
+
+.resource-title {
+    clear: both;
 }
 
 .table,
@@ -66,7 +96,7 @@ body {
 }
 
 #showResource {
-    clear: both;
+    padding-bottom: 10px;
 }
 
 .table,
@@ -115,7 +145,7 @@ body {
 
 .table-th.select:hover,
 .table-th.sort:hover {
-    background-color: #d5d5d5;
+    background-color: #ddd;
 }
 
 .table-th.select {
@@ -125,7 +155,7 @@ body {
 
 .table-th.select .options {
     position: absolute;
-    background: #d5d5d5;
+    background: #ddd;
     margin-left: -5px;
     display: none;
 }
@@ -139,3 +169,24 @@ body {
 .table-th.select .options span:hover {
     background-color: #eee;
 }
+
+.heightlight {
+    background: #fafafa;
+}
+
+#marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    padding-top: 50px;
+}
+
+#marker div {
+    font-size: 18px;
+    text-align: center;
+}
+
+

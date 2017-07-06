@@ -10,14 +10,20 @@
 
 <body>
     <h1>页面性能统计</h1>
+    <h2>页面加载各阶段时间点</h2>
     <div id="lineStack_sum"></div>
-    <div id="fanShape_sum"></div>
-    <div id="data_sum" class="table">
+    <div id="container">
+        <h2>各阶段所用时间分布图</h2>
+        <div id="fanShape_sum"></div>
+        <div id="data_sum" class="table">
         <div class="table-tr">
             <div class="table-th">阶段名称</div>
             <div class="table-th">所用时间（s）</div>
         </div>
     </div>
+    </div>
+    
+    <h2 class="resource-title">全部资源信息（点击表头可筛选排序）</h2>
     <div id="showResource" class="table">
         <div class="table-head">
             <div class="table-tr">
@@ -43,6 +49,11 @@
         </div>
         <div class="table-body" id="tableBody">
         </div>
+    </div>
+    <!-- 当页面为加载完毕，提示用户 -->
+    <div id="marker" style="display: none">
+        <div>页面正在加载</div>
+        <div>加载完成后，重新启动插件!</div>
     </div>
     <script src="node_modules/echarts/dist/echarts.min.js"></script>
     <script src="js/performance.js"></script>
