@@ -30,8 +30,8 @@
  * @type {Object}
  */
 var template = {
-	// 存放解析后的js字符串
-	jsStr: "var str = '';",
+	// 存放解析后的js字符串，执行该脚本会向全局注入globalStr变量
+	jsStr: "var globalStr = '';",
 
 	/**
 	 * 将模版中的字符串解析为可执行的js语句
@@ -60,9 +60,9 @@ var template = {
 	 * @param  {json}     data   解析的数据对象
 	 */
 	executeTpl: function(root, data) {
-		var html = eval(this.jsStr);
-		console.log(html);
-		root.innerHTML = html;
+		this._replaceEval(this.jsStr);
+		console.log(globalStr);
+		root.innerHTML = globalStr;
 	},
 
 	/**
@@ -72,7 +72,7 @@ var template = {
 	_handleLabel: function(str) {
 		// 去除空行或者空白行
 		if (str) {
-			this.jsStr += "str += '" + str + "';";
+			this.jsStr += "globalStr += '" + str + "';";
 		}
 	},
 
@@ -81,18 +81,41 @@ var template = {
 	 * @param  {string} str 需要处理的字符串
 	 */
 	_handleDirective: function(str) {
+		// 判断是否到达字符串尾部
+		var isEnd = false;
+
+		// 存放字符串分割的数组
+		var strArr = [];
+
+		// {{ 或者 }} 的位置
+		var start = 0;
+		var end = 0;
 		// 处理指令前的字符串
-		var index = str.indexOf('{{');
-		var lastIndex = str.lastIndexOf('}}');
-		if (index == 0 && lastIndex == str.length - 2) {
-			this.jsStr += str.slice(index + 2, lastIndex);
-		} else if (index != 0 && lastIndex != str.length - 2) {
-			this.jsStr += "str += '" + str.slice(0, index) + "';";
-			this.jsStr += "str += " + str.slice(index + 2, lastIndex) + ";";
-			this.jsStr += "str += '" + str.slice(lastIndex + 2, str.length) + "';";
-		} else {
-			throw new Error('格式错误');
-		}
+		// var index = str.indexOf('{{');
+		// var lastIndex = str.lastIndexOf('}}');
+		// if (index == 0 && lastIndex == str.length - 2) {
+		// 	this.jsStr += str.slice(index + 2, lastIndex);
+		// } else if (index != 0 && lastIndex != str.length - 2) {
+		// 	this.jsStr += "globalStr += '" + str.slice(0, index) + "';";
+		// 	this.jsStr += "globalStr += " + str.slice(index + 2, lastIndex) + ";";
+		// 	this.jsStr += "globalStr += '" + str.slice(lastIndex + 2, str.length) + "';";
+		// } else {
+		// 	throw new Error('格式错误');
+		// }
+		// while(!isEnd) {
+		// 	end = str.indexOf('{{', start);
+		// 	if(end != -1) {
+		// 		strArr.push(str.slice(start, end));
+		// 		start = end - 1;
+		// 		end = str.indexOf('}}');
+		// 		strArr.push(str.slice(start, end + 2));
+		// 		start = end - 1;
+		// 	} else {
+		// 		strArr.push(str.slice(start, str.length));
+		// 		isEnd = true;
+		// 	}
+		// }
+
 	},
 
 	/**
@@ -101,5 +124,46 @@ var template = {
 	 */
 	_handlePadding: function(str) {
 		return str.replace(/^\s*||\s*$/g, '');
+	},
+
+	/**
+	 * 取代eval函数
+	 * @param  {string} str 需要执行的字符串
+	 */
+	_replaceEval: function (str) {
+		// 创建一个script标签，并指定id，便于执行后，删除该脚本标签
+		var script = document.createElement('script');
+		script.id = '$replaceEval';
+
+		// 处理str，将其设置为一个自执行函数，并在执行最后删除添加到页面的标签
+		str += ';var script = document.getElementById("$replaceEval"); document.body.removeChild(script);';
+
+		// 将str作为script的文本内容
+		script.innerHTML = str;
+
+		// 添加到网页上，执行该脚本
+		document.body.appendChild(script);
+
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

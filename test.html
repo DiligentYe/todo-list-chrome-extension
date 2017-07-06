@@ -14,13 +14,15 @@
 		<ul>
 			{{for(var i = 0; i < data.todos.length; ++i) { }}
 				{{if(data.todos[i].todo_type) { }}
-					<li>{{data.todos[i].todo_name}}</li>
+					<!-- <li class="{{if(data.isOk){ }}red {{ }else{ }} green {{}}} ">{{data.todos[i].todo_name}}</li> -->
+					<li class="{{data.todos.isOk ? red : green}}">{{data.todos[i].todo_name}}</li>
 				{{ } }}
 			{{ } }}
 		</ul>
 	</script>
 
 	<script>
+		// 测试数据
 		var data = {
 			todos: [{
 				todo_name: "eat",
@@ -32,16 +34,21 @@
 				todo_name: "play",
 				todo_type: "todo"
 			}]
-		
 		};
+
+		// 模版文件
 		var tpl = document.getElementById('test_template');
 
+		// 模版文件中内容
 		str = tpl.innerHTML;
 
+		// 编译模版文件
 		template.complileTpl(str);
 
+		// 获取根节点
 		var root = document.getElementById('test');
 
+		// 将数据渲染到页面上
 		template.executeTpl(root, data);
 	</script>
 </body>
