@@ -1,30 +1,3 @@
-/*  解析前
-		<ul>
-			{{for(var i = 0; i < data.todos.length; ++i)}}
-				{{if(data.todos[i].todo_type)}}
-					<li>{{data.todos[i].todo_name}}</li>
-				{{/if}}
-			{{/for}}
-		</ul>
- */
-
-/*  解析后
- 	var str = "";
-	str += "<ul>";
-	for (var i = 0; i < data.todos.length; ++i) {
-		if (data.todos[i].todo_type) {
-			str += "<li>";
-			str += data.todos[i].todo_name;
-			str += "</li>";
-		}
-	}
-	str += "</ul>";
- */
-
-/*  执行后
- 	<ul><li>eat</li><li>sleep</li><li>play</li></ul>
- */
-
 /**
  * 自定义模版解析器————将html模版解析为html结构
  * @type {Object}
@@ -37,21 +10,24 @@ var template = {
 	 * 将模版中的字符串解析为可执行的js语句
 	 * @param  {string} tpl 模版字符串
 	 */
-	complileTpl: function(tpl) {
+	complileTpl: function(id) {
+		// 模版文件
+		var tpl = document.getElementById(id);
+
+		// 模版文件中内容
+		var html = tpl.innerHTML;
+
 		// 模版字符串按行分隔
-		var tplArrs = tpl.split('\n');
+		var tplArrs = html.split('\n');
 
 		for (var index = 0; index < tplArrs.length; ++index) {
-
+			// 去掉前后多余的空格
 			var item = this._handlePadding(tplArrs[index]);
-
-			// 处理不包含指令的行
-			if (item.indexOf('{{') == -1) {
-				this._handleLabel(item);
-			} else {
-				this._handleDirective(item);
-			}
+			// 处理字符串
+			this._handleStr(item);	
 		}
+
+		return template;
 	},
 
 	/**
@@ -59,28 +35,21 @@ var template = {
 	 * @param  {DOM对象}  root    挂载对象
 	 * @param  {json}     data   解析的数据对象
 	 */
-	executeTpl: function(root, data) {
+	executeTpl: function(id, data) {
+		// 获取添加的根节点
+		var root = document.getElementById(id);
+		
 		this._replaceEval(this.jsStr);
 		console.log(globalStr);
 		root.innerHTML = globalStr;
 	},
 
-	/**
-	 * 不包含指令行的处理函数
-	 * @param  {string} str 需要处理的字符串
-	 */
-	_handleLabel: function(str) {
-		// 去除空行或者空白行
-		if (str) {
-			this.jsStr += "globalStr += '" + str + "';";
-		}
-	},
 
 	/**
-	 * 包含指令行的处理函数
+	 * 字符串的处理函数：将字符串处理为js语句
 	 * @param  {string} str 需要处理的字符串
 	 */
-	_handleDirective: function(str) {
+	_handleStr: function(str) {
 		// 判断是否到达字符串尾部
 		var isEnd = false;
 
@@ -90,32 +59,102 @@ var template = {
 		// {{ 或者 }} 的位置
 		var start = 0;
 		var end = 0;
-		// 处理指令前的字符串
-		// var index = str.indexOf('{{');
-		// var lastIndex = str.lastIndexOf('}}');
-		// if (index == 0 && lastIndex == str.length - 2) {
-		// 	this.jsStr += str.slice(index + 2, lastIndex);
-		// } else if (index != 0 && lastIndex != str.length - 2) {
-		// 	this.jsStr += "globalStr += '" + str.slice(0, index) + "';";
-		// 	this.jsStr += "globalStr += " + str.slice(index + 2, lastIndex) + ";";
-		// 	this.jsStr += "globalStr += '" + str.slice(lastIndex + 2, str.length) + "';";
-		// } else {
-		// 	throw new Error('格式错误');
-		// }
-		// while(!isEnd) {
-		// 	end = str.indexOf('{{', start);
-		// 	if(end != -1) {
-		// 		strArr.push(str.slice(start, end));
-		// 		start = end - 1;
-		// 		end = str.indexOf('}}');
-		// 		strArr.push(str.slice(start, end + 2));
-		// 		start = end - 1;
-		// 	} else {
-		// 		strArr.push(str.slice(start, str.length));
-		// 		isEnd = true;
-		// 	}
-		// }
+		
+		// 是否将该字符串根据规则切分为对应的字符串数据
+		while(!isEnd) {
+			end = str.indexOf('{{', start);
+			if(end != -1) {
+				// 是否存在{{，如果存在，将{{之前的字符串push字符串数组，并将{{}}包含的字符串（包括{{}}）也push进入数组，继续处理
+				strArr.push(str.slice(start, end));
+				start = end;
+				end = str.indexOf('}}', start);
+				strArr.push(str.slice(start, end + 2));
+				start = end + 2;
+			} else {
+				// 不存在{{}}，直接将为处理的字符串，直接push到数组中，终止循环
+				strArr.push(str.slice(start, str.length));
+				isEnd = true;
+			}
+		}
+		// 处理处理过后的字符串数组
+		this._handleArr(strArr);
+	},
 
+	/**
+	 * 字符串数组处理函数：将传入的字符串数组，根据相应的规则进行处理
+	 * @param  {array} arr 需要处理的字符串数组
+	 */
+	_handleArr: function (arr) {
+		for (var i = 0; i < arr.length; ++i) {
+
+			var str = arr[i];
+			// {{在字符串中的位置
+			var pos = str.indexOf('{{');
+
+			if(pos == -1) {
+				// 字符串中不存在{{,直接拼接
+				if(str != '') {
+					this.jsStr += "globalStr +='" + str + "';";
+				}
+			} else {
+				// 如果字符串中存在，需要进行处理和判断
+				// 去掉{{}}
+				str = str.replace(/{{|}}/g, '');
+				// 判断是不是if语句或者for语句
+				if(str.indexOf('{') != -1 || str.indexOf('}') != -1){
+					this.jsStr += str;
+				} 
+				// 判断是否是三目运算符
+				else if(str.indexOf('?') != -1 || str.indexOf(':') != -1){
+					// 处理三目运算符
+					this._handleThreeOpt(str);
+					this.jsStr += ";";
+				}
+				// 判断数据
+				else {
+					this.jsStr += "globalStr += " + str + ";";
+				}
+
+			}
+		}
+	},
+
+	/**
+	 * 三目远算符字符串处理函数：将传入的三目远算符字符串，根据相应的规则进行处理
+	 * @param  {string} str 需要处理的三目远算符字符串
+	 */
+	_handleThreeOpt: function (str) {
+		// 问号位置
+		var qMarkPos = str.indexOf('?');
+		this.jsStr += str.slice(0, qMarkPos + 1);
+
+		// 判断是否有二级判断
+		var otherQMarkerPos = str.indexOf('?', qMarkPos + 1);
+		// 第一个冒号的位置
+		var colonPos = str.indexOf(':', qMarkPos + 1);
+		if(otherQMarkerPos == -1) {
+			// 没有二级判断
+			// 处理字符串
+			this.jsStr += "globalStr+='" + this._handlePadding(str.slice(qMarkPos + 1, colonPos));
+			this.jsStr += "':";
+			this.jsStr += "globalStr+='" + this._handlePadding(str.slice(colonPos + 1, str.length));
+			this.jsStr += "'";
+		} else {
+			// 判断二级判断在前在后
+			if(otherQMarkerPos < colonPos) {
+				// 在前
+				var lastColonPos = str.lastIndexOf(':');
+				this._handleThreeOpt(str.slice(qMarkPos + 1, lastColonPos));
+				this.jsStr += ":";
+				this.jsStr += "globalStr+='" + this._handlePadding(str.slice(lastColonPos + 1, str.length));
+				this.jsStr += "'";
+			} else {
+				// 在后
+				this.jsStr += "globalStr+='" + this._handlePadding(str.slice(qMarkPos + 1, colonPos));
+				this.jsStr += "':";
+				this._handleThreeOpt(str.slice(colonPos + 1, str.length));
+			}
+		}
 	},
 
 	/**
@@ -123,7 +162,7 @@ var template = {
 	 * @param  {string} str 需要处理的字符串
 	 */
 	_handlePadding: function(str) {
-		return str.replace(/^\s*||\s*$/g, '');
+		return str.replace(/^\s*|\s*$/g, '');
 	},
 
 	/**
