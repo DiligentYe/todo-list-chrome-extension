@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        width: 400px;
+        height: 500px;
+        position: relative;
+        font-size: 24px;
+        color: #aaa;
+        line-height: 1;
+    }
+
+
+    label,
+    input {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    
+    input {
+        border: 0;
+        width: 100%;
+        font-size: 20px;
+        padding-bottom: 10px;
+        margin-bottom: 25px;
+        color: #ccc;
+        text-align: center;
+    }
+
+    input:focus {
+    	outline: 0;
+        color: #026e00;
+    }
+
+    #logo {
+        width: 100%;
+        height: 150px;
+        background: url(images/logo.png) no-repeat;
+        background-position: center center;
+        -webkit-background-size: 400px 150px;
+        background-size: 400px 150px;
+
+        margin-bottom: 30px;
+    }
+
+    #content {
+        margin: 0 60px;
+        height: 310px;
+        text-align: center;
+    }
+
+    #ipLable,
+    #portLable {
+        position: relative;
+    }
+
+    #ipLable::after,
+    #portLable::after {
+        position: absolute;
+        top: 65px;
+        left: 0;
+        content: '';
+        width: 100%;
+        height: 3px;
+        background-color: #eaf5e9;
+    }
+
+    button {
+        border: 0;
+        width: 80px;
+        height: 80px;
+        padding: 10px;
+        border-radius: 45px;
+        background-color: #026e00;
+        font-size: 18px;
+        color: #fff;
+
+    }
+
+    button:focus {
+        outline: 0;
+    }
+
+    #footer {
+        height: 40px;
+        background: #35302a;
+        line-height: 40px;
+        color: #fff;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    #footer a {
+        text-decoration: none;
+        color: #fff;
+
+    }
+    
+    /*点击之后按钮样式*/
+    .clicked {
+        background-color: #eaf5e9;
+        color: #ddd;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="logo"></div>
+    <div id="content">
+        <label for="localhost" id="ipLable">主&nbsp;&nbsp;&nbsp;机</label>
+        <input type="text" name="localhost" id="localhost" value="localhost">
+        <label for="port" id="portLable">端口号</label>
+        <input type="text" name="port" id="port" value="9229">
+
+        <button class="clicked">调试</button>
+    </div>
+    <div id="footer"> 反馈邮箱：<a href="mailto:yeyingping15@mails.ucas.ac.cn">yeyingping15@mails.ucas.ac.cn</a></div>
+</body>
+
+</html>

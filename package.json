@@ -1,14 +1,16 @@
 {
-  "name": "todo-list-chrome-extension",
+  "name": "nodejs-debugger-chrome-extension",
   "version": "1.0.0",
-  "description": "show todo list in chrome browser",
+  "description": "debugger your nodejs programming by chrome DevTools",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "browser",
-    "exitension"
+    "exitension",
+    "nodejs",
+    "debugger"
   ],
   "author": "yyp",
   "license": "ISC"
