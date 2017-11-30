@@ -18,11 +18,11 @@
         "default_title": "Node.js debugger",
         "default_popup": "popup.html"
     },
-    
+
     //Google允许Chrome扩展应用不必受限于跨域限制。但出于安全考虑，需要在Manifest的permissions属性中声明需要跨域的权限。
     "permissions": [
-        // "*://www.google.com/*"
-        "tabs"
+        "tabs",
+        "*://*/*"
     ],
 
     "web_accessible_resources": [
