@@ -25,7 +25,7 @@
         margin-bottom: 10px;
     }
 
-    
+
     input {
         border: 0;
         width: 100%;
@@ -37,7 +37,7 @@
     }
 
     input:focus {
-    	outline: 0;
+        outline: 0;
         color: #026e00;
     }
 
@@ -83,7 +83,6 @@
         background-color: #026e00;
         font-size: 18px;
         color: #fff;
-
     }
 
     button:focus {
@@ -102,13 +101,46 @@
     #footer a {
         text-decoration: none;
         color: #fff;
-
     }
-    
     /*点击之后按钮样式*/
+
     .clicked {
         background-color: #eaf5e9;
         color: #ddd;
+    }
+    /* 弹出层样式 */
+
+    .marker-container {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.3);
+
+        display: none;
+    }
+
+    .marker {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 240px;
+        padding: 25px;
+        font-size: 12px;
+        color: #35302a;
+        background-color: #fff;
+        line-height: 1.5;
+        box-shadow: 1px 1px 3px #000;
+    }
+
+    .close {
+        text-align: center;
+        margin-top: 20px;
+        padding: 5px 0 ;
+        background-color: #026e00;
+        color: #fff;
     }
     </style>
 </head>
@@ -120,10 +152,18 @@
         <input type="text" name="localhost" id="localhost" value="localhost">
         <label for="port" id="portLable">端口号</label>
         <input type="text" name="port" id="port" value="9229">
-
-        <button class="clicked">调试</button>
+        <button id="debug">调试</button>
     </div>
     <div id="footer"> 反馈邮箱：<a href="mailto:yeyingping15@mails.ucas.ac.cn">yeyingping15@mails.ucas.ac.cn</a></div>
+    <div id="markerC" class="marker-container">
+        <div id="marker" class="marker">
+            1. 检查您的node版本是否是7.0.0以上
+            <br/> 2. 确保你已经在终端键入node --inspect path/xxx.js
+            <br/> 3. 确保你输入的主机名和端口号正确
+            <div id="close" class="close">关闭</div>
+        </div>
+    </div>
+    <script src="js/popup.js"></script>
 </body>
 
 </html>
